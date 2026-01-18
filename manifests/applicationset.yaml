@@ -7,7 +7,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/dotcomrow/rules-apps.git
-        revision: main
+        revision: prod
         directories:
           - path: manifests/apps/*
   template:
@@ -17,7 +17,7 @@ spec:
       project: rules-apps
       source:
         repoURL: https://github.com/dotcomrow/rules-apps.git
-        targetRevision: main
+        targetRevision: prod
         path: "{{path}}"
       destination:
         server: https://kubernetes.default.svc
