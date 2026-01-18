@@ -14,7 +14,7 @@ No business rule source code should live here.
 
 ## Prereqs
 
-- Argo CD namespace `argocd`, project `rules-engine`.
+- Argo CD namespace `argocd`, project `rules-apps`.
 - Vault Kubernetes auth role `drools` allows the Job service account.
 - KIE Server reachable at:
   `http://kie-server.drools.svc.cluster.local:8080/kie-server/services/rest/server`

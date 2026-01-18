@@ -14,7 +14,7 @@ spec:
     metadata:
       name: rules-{{path.basename}}
     spec:
-      project: rules-engine
+      project: rules-apps
       source:
         repoURL: https://github.com/dotcomrow/rules-apps.git
         targetRevision: main
