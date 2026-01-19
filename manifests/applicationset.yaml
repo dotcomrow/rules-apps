@@ -9,7 +9,7 @@ spec:
         repoURL: https://github.com/dotcomrow/rules-apps.git
         revision: prod
         directories:
-          - path: manifests/apps/*
+          - path: apps/*
   template:
     metadata:
       name: rules-{{path.basename}}
