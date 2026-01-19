@@ -50,6 +50,46 @@ spec:
               fi
 
               KIE_SERVER_URL="http://kie-server.drools.svc.cluster.local:8080/kie-server/services/rest/server"
+              KC_CLIENT_ID_JSON="$(vault kv get -format=json secret/keycloak-client-id-drools-kie-server)"
+              KC_CLIENT_ID="$(printf '%s' "$KC_CLIENT_ID_JSON" | jq -r '.data.data.value // .data.data.id // .data.data.client_id // empty')"
+              KC_CLIENT_SECRET_JSON="$(vault kv get -format=json secret/keycloak-client-secret-drools-kie-server)"
+              KC_CLIENT_SECRET="$(printf '%s' "$KC_CLIENT_SECRET_JSON" | jq -r '.data.data.value // .data.data.secret // .data.data.password // empty')"
+              if [ -n "$KC_CLIENT_ID" ]; then
+                echo "Keycloak client id: ${KC_CLIENT_ID}"
+              else
+                echo "Keycloak client id missing"
+              fi
+              if [ -n "$KC_CLIENT_SECRET" ]; then
+                echo "Keycloak client secret length: ${#KC_CLIENT_SECRET}"
+              else
+                echo "Keycloak client secret missing"
+              fi
+              TOKEN=""
+              if [ -n "$KC_CLIENT_ID" ] && [ -n "$KC_CLIENT_SECRET" ]; then
+                TOKEN_URL="https://auth.suncoast.systems/realms/internal/protocol/openid-connect/token"
+                TOKEN_RESPONSE="$(curl -sS -w '\n%{http_code}' \
+                  -H "Content-Type: application/x-www-form-urlencoded" \
+                  --data-urlencode "grant_type=password" \
+                  --data-urlencode "client_id=${KC_CLIENT_ID}" \
+                  --data-urlencode "client_secret=${KC_CLIENT_SECRET}" \
+                  --data-urlencode "username=${KIE_USER}" \
+                  --data-urlencode "password=${KIE_PASS}" \
+                  "$TOKEN_URL" || true)"
+                TOKEN_BODY="$(printf '%s' "$TOKEN_RESPONSE" | sed '$d')"
+                TOKEN_CODE="$(printf '%s' "$TOKEN_RESPONSE" | tail -n 1)"
+                if [ "$TOKEN_CODE" = "200" ]; then
+                  TOKEN="$(printf '%s' "$TOKEN_BODY" | jq -r '.access_token // empty')"
+                  if [ -n "$TOKEN" ]; then
+                    echo "Keycloak token acquired"
+                  else
+                    echo "Keycloak token missing in response"
+                  fi
+                else
+                  TOKEN_ERROR="$(printf '%s' "$TOKEN_BODY" | jq -r '.error // empty')"
+                  TOKEN_ERROR_DESC="$(printf '%s' "$TOKEN_BODY" | jq -r '.error_description // empty')"
+                  echo "Keycloak token request failed: HTTP ${TOKEN_CODE} ${TOKEN_ERROR}${TOKEN_ERROR_DESC:+ - }${TOKEN_ERROR_DESC}"
+                fi
+              fi
               CONTAINER_ID="tool-use-policy"
               GROUP_ID="com.dotcomrow.rules"
               ARTIFACT_ID="tool-use-policy"
@@ -69,10 +109,19 @@ spec:
               )"
 
               echo "Registering container ${CONTAINER_ID} -> ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
-              curl -fsS -u "${KIE_USER}:${KIE_PASS}" \
-                -H "Content-Type: application/json" \
-                -X PUT "${KIE_SERVER_URL}/containers/${CONTAINER_ID}" \
-                -d "${payload}"
+              if [ -n "$TOKEN" ]; then
+                echo "Registering via bearer token"
+                curl -fsS -H "Authorization: Bearer ${TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  -X PUT "${KIE_SERVER_URL}/containers/${CONTAINER_ID}" \
+                  -d "${payload}"
+              else
+                echo "Registering via basic auth"
+                curl -fsS -u "${KIE_USER}:${KIE_PASS}" \
+                  -H "Content-Type: application/json" \
+                  -X PUT "${KIE_SERVER_URL}/containers/${CONTAINER_ID}" \
+                  -d "${payload}"
+              fi
               echo "✅ Container registered"
           resources:
             requests:
