@@ -23,7 +23,7 @@ spec:
     spec:
       project: rules-apps
       source:
-        repoURL: "{{url}}"
+        repoURL: "https://github.com/{{organization}}/{{repository}}.git"
         targetRevision: prod
         path: manifests
         kustomize:
