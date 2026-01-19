@@ -83,25 +83,24 @@ spec:
               echo "KIE server: ${KIE_SERVER_URL}"
               echo "Release: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
 
-              payload="$(cat <<EOF
-              {
-                "releaseId": {
-                  "groupId": "${GROUP_ID}",
-                  "artifactId": "${ARTIFACT_ID}",
-                  "version": "${VERSION}"
-                }
-              }
-              EOF
-              )"
+              payload="$(jq -n \
+                --arg cid "$CONTAINER_ID" \
+                --arg gid "$GROUP_ID" \
+                --arg aid "$ARTIFACT_ID" \
+                --arg ver "$VERSION" \
+                '{containerId:$cid,releaseId:{groupId:$gid,artifactId:$aid,version:$ver},"release-id":{groupId:$gid,artifactId:$aid,version:$ver}}')"
+              echo "Payload: ${payload}"
 
               echo "Registering container ${CONTAINER_ID} -> ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
               echo "Registering via bearer token"
               RESPONSE_FILE="$(mktemp)"
               HTTP_CODE="$(curl -sS -o "$RESPONSE_FILE" -w "%{http_code}" \
                 -H "Authorization: Bearer ${TOKEN}" \
+                -H "Accept: application/json" \
                 -H "Content-Type: application/json" \
+                -H "X-KIE-ContentType: JSON" \
                 -X PUT "${KIE_SERVER_URL}/containers/${CONTAINER_ID}" \
-                -d "${payload}" || true)"
+                --data-binary "${payload}" || true)"
               if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
                 echo "✅ Container registered"
               else
