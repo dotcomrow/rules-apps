@@ -9,6 +9,7 @@ spec:
         github:
           organization: dotcomrow
           api: https://api.github.com
+          cloneProtocol: https
           tokenRef:
             secretName: github-scm-token
             key: token
