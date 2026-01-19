@@ -19,7 +19,9 @@ spec:
         repoURL: https://github.com/dotcomrow/rules-apps.git
         targetRevision: prod
         path: "{{path}}"
-        kustomize: {}
+        kustomize:
+          commonLabels:
+            app.kubernetes.io/managed-by: argocd
       destination:
         server: https://kubernetes.default.svc
         namespace: drools
