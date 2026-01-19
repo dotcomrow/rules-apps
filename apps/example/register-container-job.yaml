@@ -30,9 +30,20 @@ spec:
                 jwt=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token))
               export VAULT_TOKEN
 
+              echo "Vault login ok. Fetching KIE credentials from secret/drools/admin"
               KIE_USER_JSON="$(vault kv get -format=json secret/drools/admin)"
               KIE_USER="$(printf '%s' "$KIE_USER_JSON" | jq -r '.data.data.username // empty')"
               KIE_PASS="$(printf '%s' "$KIE_USER_JSON" | jq -r '.data.data.password // empty')"
+              if [ -n "$KIE_USER" ]; then
+                echo "KIE user: ${KIE_USER}"
+              else
+                echo "KIE user missing"
+              fi
+              if [ -n "$KIE_PASS" ]; then
+                echo "KIE password length: ${#KIE_PASS}"
+              else
+                echo "KIE password missing"
+              fi
               if [ -z "$KIE_USER" ] || [ -z "$KIE_PASS" ]; then
                 echo "❌ Missing drools kie-user credentials in Vault"
                 exit 1
@@ -43,6 +54,8 @@ spec:
               GROUP_ID="com.dotcomrow.rules"
               ARTIFACT_ID="tool-use-policy"
               VERSION="1.0.0"
+              echo "KIE server: ${KIE_SERVER_URL}"
+              echo "Release: ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
 
               payload="$(cat <<EOF
               {
