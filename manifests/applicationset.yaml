@@ -13,9 +13,9 @@ spec:
             secretName: github-scm-token
             key: token
         filters:
-          - topicMatch: "^drools-rules-app$"
-            pathsExist:
-              - manifests
+          - pathsExist:
+              - manifests/register-container-job.yaml
+              - manifests/workbench-import-job.yaml
   template:
     metadata:
       name: rules-{{repository}}
