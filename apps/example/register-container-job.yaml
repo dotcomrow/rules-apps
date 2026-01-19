@@ -35,9 +35,9 @@ spec:
               fi
 
               KIE_SERVER_URL="http://kie-server.drools.svc.cluster.local:8080/kie-server/services/rest/server"
-              CONTAINER_ID="billing-eligibility"
-              GROUP_ID="systems.suncoast.rules.billing"
-              ARTIFACT_ID="eligibility-rules"
+              CONTAINER_ID="tool-use-policy"
+              GROUP_ID="com.dotcomrow.rules"
+              ARTIFACT_ID="tool-use-policy"
               VERSION="1.0.0"
 
               payload="$(cat <<EOF
