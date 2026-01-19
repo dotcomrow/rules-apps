@@ -88,7 +88,7 @@ spec:
                 --arg gid "$GROUP_ID" \
                 --arg aid "$ARTIFACT_ID" \
                 --arg ver "$VERSION" \
-                '{container-id:$cid,"release-id":{"group-id":$gid,"artifact-id":$aid,"version":$ver}}')"
+                '{ "container-id": $cid, "release-id": { "group-id": $gid, "artifact-id": $aid, "version": $ver } }')"
               echo "Payload: ${payload}"
 
               echo "Registering container ${CONTAINER_ID} -> ${GROUP_ID}:${ARTIFACT_ID}:${VERSION}"
