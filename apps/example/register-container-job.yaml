@@ -30,7 +30,7 @@ spec:
                 jwt=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token))
               export VAULT_TOKEN
 
-              KIE_USER_JSON="$(vault kv get -format=json secret/drools/kie-user)"
+              KIE_USER_JSON="$(vault kv get -format=json secret/drools/admin)"
               KIE_USER="$(printf '%s' "$KIE_USER_JSON" | jq -r '.data.data.username // empty')"
               KIE_PASS="$(printf '%s' "$KIE_USER_JSON" | jq -r '.data.data.password // empty')"
               if [ -z "$KIE_USER" ] || [ -z "$KIE_PASS" ]; then
