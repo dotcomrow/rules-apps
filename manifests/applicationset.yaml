@@ -13,7 +13,8 @@ spec:
             secretName: github-scm-token
             key: token
         filters:
-          - pathsExist:
+          - labelMatch: drools-rules-app
+            pathsExist:
               - manifests/register-container-job.yaml
               - manifests/workbench-import-job.yaml
   template:
